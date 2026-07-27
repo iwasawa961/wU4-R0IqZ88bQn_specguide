@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>既存の仕様書をChatGPTでデザイン変更する方法</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Reset */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    :root {
+      --primary: #1e40af;
+      --primary-gradient: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+      --accent: #2563eb;
+      --chatgpt-color: #10a37f;
+      --chatgpt-gradient: linear-gradient(135deg, #10a37f 0%, #0d8c6c 100%);
+      --text-main: #1f2937;
+      --text-muted: #4b5563;
+      --border: #cbd5e1;
+      --bg-light: #f8fafc;
+      --bg-code: #f1f5f9;
+      --bg-tip: #eff6ff;
+      --border-tip: #bfdbfe;
+      --text-tip: #1e40af;
+    }
+    
+    @page {
+      size: A4;
+      margin: 0;
+    }
+    
+    /* Screen View layout (centered A4 pages with shadows) */
+    body {
+      font-family: 'Inter', 'Noto Sans JP', sans-serif;
+      color: var(--text-main);
+      background-color: #f1f5f9; /* Slate 100 background for browser */
+      margin: 0;
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    
+    .page {
+      width: 210mm;
+      height: 297mm;
+      padding: 14mm 18mm 12mm 18mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      page-break-after: always;
+      box-sizing: border-box;
+      position: relative;
+      background-color: #ffffff;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      border-radius: 6px;
+    }
+    .page:last-child {
+      page-break-after: avoid;
+    }
+    
+    /* Green Theme override for Page 2 */
+    .page-green {
+      --primary: #065f46;
+      --primary-gradient: linear-gradient(135deg, #065f46 0%, #10b981 100%);
+      --accent: #059669;
+      --bg-tip: #ecfdf5;
+      --border-tip: #a7f3d0;
+      --text-tip: #047857;
+    }
+    
+    /* Red Theme override for Page 3 */
+    .page-red {
+      --primary: #991b1b;
+      --primary-gradient: linear-gradient(135deg, #991b1b 0%, #ef4444 100%);
+      --accent: #dc2626;
+      --bg-tip: #fef2f2;
+      --border-tip: #fca5a5;
+      --text-tip: #991b1b;
+    }
+    
+    header {
+      border-bottom: 2px solid #cbd5e1;
+      padding-bottom: 8px;
+    }
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      background: var(--bg-light);
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+    h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      line-height: 1.5;
+    }
+    
+    /* Main Content block spanning between Header and Footer */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-evenly;
+      margin: 8px 0;
+    }
+    
+    .step-container {
+      width: 100%;
+    }
+    
+    .step-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .step-header-left {
+      display: flex;
+      align-items: center;
+    }
+    .step-num {
+      background: var(--primary-gradient);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-right: 8px;
+    }
+    .step-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    
+    /* Step Blocks */
+    .step-01 {
+      background-color: var(--bg-light);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .step-01-text {
+      flex: 1;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      background: var(--primary-gradient);
+      color: white !important;
+      text-decoration: none;
+      padding: 5px 12px;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 10.5px;
+      white-space: nowrap;
+      border: none;
+    }
+    .btn-chatgpt {
+      background: var(--chatgpt-gradient);
+    }
+    
+    /* Grid layouts */
+    .step-02-grid {
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 14px;
+    }
+    .step-grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    
+    .prompt-wrapper {
+      position: relative;
+      margin-bottom: 8px;
+    }
+    .prompt-label {
+      position: absolute;
+      top: -8px;
+      left: 10px;
+      background: #ffffff;
+      padding: 0 5px;
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--accent);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      z-index: 5;
+    }
+    
+    .prompt-box {
+      background-color: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .prompt-text {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 10.5px;
+      color: #334155;
+      white-space: pre-wrap;
+      line-height: 1.45;
+      flex: 1;
+      text-align: left;
+    }
+    
+    .copy-btn {
+      background: var(--accent);
+      color: #ffffff !important;
+      border: none;
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-size: 10.5px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .copy-btn:hover {
+      background: #1d4ed8;
+    }
+    .page-green .copy-btn:hover {
+      background: #047857;
+    }
+    .page-red .copy-btn:hover {
+      background: #991b1b;
+    }
+    
+    .tip-box {
+      background-color: var(--bg-tip);
+      border: 1px solid var(--border-tip);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 11px;
+      color: var(--text-tip);
+      line-height: 1.5;
+    }
+    .tip-box p {
+      margin-bottom: 4px;
+    }
+    .tip-box p:last-child {
+      margin-bottom: 0;
+    }
+    
+    .image-col-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .image-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px;
+      background-color: var(--bg-light);
+    }
+    .image-col a {
+      display: block;
+      width: 100%;
+      cursor: zoom-in;
+      transition: transform 0.2s ease;
+      text-align: center;
+    }
+    .image-col a:hover {
+      transform: scale(1.02);
+    }
+    .image-col img {
+      max-width: 100%;
+      max-height: 48mm;
+      border-radius: 4px;
+      object-fit: contain;
+    }
+    .image-caption {
+      font-size: 9.5px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-weight: 500;
+      text-align: center;
+      line-height: 1.3;
+    }
+    .image-references {
+      font-size: 11px;
+      padding-left: 4px;
+      color: var(--text-muted);
+    }
+    .image-references a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .image-references a:hover {
+      text-decoration: underline;
+    }
+    
+    /* Finished block style */
+    .finished-container {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 11px;
+      background-color: var(--bg-light);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 6px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .finished-title {
+      font-weight: 700;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .finished-link {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .finished-link:hover {
+      text-decoration: underline;
+    }
+    
+    /* Footer section */
+    footer {
+      border-top: 2px solid #cbd5e1;
+      padding-top: 8px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .footer-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+    }
+    .footer-section-title::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 12px;
+      background: var(--accent);
+      margin-right: 6px;
+      border-radius: 2px;
+    }
+    .footer-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .footer-links {
+      list-style: none;
+      padding: 0;
+    }
+    .footer-links li {
+      margin-bottom: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .footer-links a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .footer-links a:hover {
+      text-decoration: underline;
+    }
+    
+    /* Specific overrides for print */
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        padding: 0;
+        gap: 0;
+      }
+      .page {
+        padding: 14mm 18mm 12mm 18mm;
+        width: 100%;
+        height: 297mm;
+        page-break-after: always;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+      }
+      .page:last-child {
+        page-break-after: avoid;
+      }
+      .btn {
+        background: var(--primary) !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .btn-chatgpt {
+        background: #10a37f !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .step-num {
+        background: var(--primary) !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .copy-btn {
+        background: var(--accent) !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .finished-container {
+        background-color: #f8fafc !important;
+        border: 1px solid #cbd5e1 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== PAGE 1 ==================== -->
+  <div class="page">
+    <!-- Header -->
+    <header>
+      <div class="header-top">
+        <h1>既存の仕様書をChatGPTでデザイン変更する方法</h1>
+        <div class="logo">CHATGPT GUIDE</div>
+      </div>
+      <div class="subtitle">指示書の絵型や寸法をAIを使って効率的に変更・修正する手順解説</div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main>
+      <!-- Step 1 -->
+      <div class="step-container">
+        <div class="step-header">
+          <div class="step-header-left">
+            <div class="step-num">01</div>
+            <div class="step-title">元PDFファイルをJPG画像に変換・分割する</div>
+          </div>
+        </div>
+        <div class="step-01">
+          <div class="step-01-text">
+            PDFのままだとChatGPTがうまく読み込めないため、まずはPDFをJPG画像に変換・分割します。
+          </div>
+          <a href="https://smallpdf.com/jp/pdf-to-jpg" class="btn" target="_blank">SmallpdfでJPG変換 ➔</a>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step-container">
+        <div class="step-header">
+          <div class="step-header-left">
+            <div class="step-num">02</div>
+            <div class="step-title">ChatGPTに1枚目の画像を送り、デザイン修正を指示する</div>
+          </div>
+          <a href="https://chatgpt.com/" class="btn btn-chatgpt" target="_blank">ChatGPTを開く ➔</a>
+        </div>
+        <div class="step-02-grid">
+          <div class="text-col">
+            <p style="margin-bottom: 6px; font-size: 11.5px; color: var(--text-muted);">
+              1枚目のJPG画像をChatGPTにドロップし、<strong>【画像を作成】をクリックして</strong>以下のテキストを入力します。
+            </p>
+            <div class="prompt-wrapper">
+              <div class="prompt-label">ChatGPT指示テキスト</div>
+              <div class="prompt-box">
+                <div class="prompt-text" id="prompt-step2">こちらのニット仕様書のデザインを修正したいです。 
+絵型を、
+
+[変更内容を記載]
+ 
+その内容に合わせて指示書の寸法なども変更お願いします。
+それ以外の内容やデザインはそのままで、仕様書修正を作成お願いします。</div>
+                <button class="copy-btn" onclick="copyPrompt('prompt-step2', this)">指示テキストをコピー</button>
+              </div>
+            </div>
+            <div class="tip-box">
+              <p><strong>💡 伝わる指示のコツ：</strong></p>
+              <p>・<strong>寸法の自動調整:</strong> 上記のように指示すると、ChatGPTが変更内容に合わせて類推して数字を自動的に調整してくれます（厳密ではありません）。<strong>変更内容に合わせて指示をアレンジしてみてください。</strong></p>
+              <p>・<strong>マーキング指示:</strong> 1回でうまくいかない場合は、右図のように元画像に直接「赤線」「青線」などで修正箇所を囲み、<strong>「赤線で囲んだ部分を空欄にして」「青線で囲んだ部分をUネックに変えて」</strong>など、画像とテキストを合わせて指示すると非常に効果的です。</p>
+            </div>
+          </div>
+          <div class="image-col-wrapper">
+            <div class="image-col">
+              <a href="specification.png" target="_blank" title="画像を拡大表示">
+                <img src="specification.png" alt="修正箇所のマーキング例">
+              </a>
+              <div class="image-caption">図：直接ペイント等でマーキングした指示画像例<br><span style="font-size: 8px; color: var(--accent);">(クリックで拡大表示)</span></div>
+            </div>
+            <div class="image-references">
+              💬 参考：
+              <a href="https://chatgpt.com/share/6a633270-cb9c-83e8-9c69-b2fe2689d75c" target="_blank">チャット例①</a> /
+              <a href="https://chatgpt.com/share/6a66c164-704c-83ee-873b-06a0319c8da6" target="_blank">チャット例②</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step-container">
+        <div class="step-header">
+          <div class="step-header-left">
+            <div class="step-num">03</div>
+            <div class="step-title">2枚目がある場合、続けて絵型の差し替えを指示する</div>
+          </div>
+        </div>
+        <p style="margin-bottom: 6px; font-size: 11.5px; color: var(--text-muted);">
+          指示書に2枚目がある場合は、2枚目のJPG画像をドロップし、以下のテキストを入力します。
+        </p>
+        <div class="prompt-wrapper">
+          <div class="prompt-label">ChatGPT指示テキスト</div>
+          <div class="prompt-box">
+            <div class="prompt-text" id="prompt-step3">先程作成した絵型を、こちらの仕様書にも使用したいです。前後の絵型を、先程作成したものに差し替えてください。それ以外の内容やデザインはそのままで、仕様書修正を作成お願いします。</div>
+            <button class="copy-btn" onclick="copyPrompt('prompt-step3', this)">指示テキストをコピー</button>
+          </div>
+        </div>
+        <!-- Finished Product Box under Step 3 -->
+        <div class="finished-container">
+          <span class="finished-title">✨ 完成品がこちら：</span>
+          <a href="finished_1.jpg" target="_blank" class="finished-link">📄 1枚目（指示書）</a>
+          <span style="color: #cbd5e1;">/</span>
+          <a href="finished_2.png" target="_blank" class="finished-link">📄 2枚目（詳細仕様書）</a>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <div>
+        <div class="footer-section-title">AIを上手に使うための注意点</div>
+        <p class="footer-text" style="margin-bottom: 4px;">
+          ChatGPTが生成する画像は、細かく見ると線の位置がおかしかったり、数字がズレていたりと、不完全な部分が多々あります。
+        </p>
+        <p class="footer-text">
+          AIだけで完璧なものを追求するよりも、<strong>「ある程度形になったら、ダウンロードして自分で画像編集ソフト等で修正する」</strong>方が、結果として早く正確に仕上がります。
+        </p>
+      </div>
+      <div>
+        <div class="footer-section-title">PDFへの再結合</div>
+        <p class="footer-text" style="margin-bottom: 6px;">
+          修正後の2枚の画像を1つのPDFにまとめたい場合は、JPGからPDFへ変換・結合します。
+        </p>
+        <ul class="footer-links">
+          <li>
+            🔗 <strong>PDF結合サイト:</strong> 
+            <a href="https://smallpdf.com/jp/merge-pdf" target="_blank" style="font-weight: bold;">Smallpdf (PDF結合)</a>
+          </li>
+        </ul>
+      </div>
+    </footer>
+  </div>
+
+
+  <!-- ==================== PAGE 2 ==================== -->
+  <div class="page page-green">
+    <!-- Header -->
+    <header>
+      <div class="header-top">
+        <h1>既存の仕様書をChatGPTでデザイン変更する方法 02</h1>
+        <div class="logo">CHATGPT GUIDE 02</div>
+      </div>
+      <div class="subtitle">絵型と指示書を分け、絵型のみに集中してデザイン変更を加える応用的な手順解説</div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main>
+      <!-- Page 2 Step 1 -->
+      <div class="step-container">
+        <div class="step-header">
+          <div class="step-header-left">
+            <div class="step-num">01</div>
+            <div class="step-title">元PDFから絵型のみを抽出・保存する</div>
+          </div>
+        </div>
+        <div class="step-02-grid">
+          <div class="text-col" style="display: flex; flex-direction: column; justify-content: center;">
+            <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 8px;">
+              専用の切り抜きサイトで絵型のみを抽出します。PDFをドロップし、FRONTとBACKの描画範囲をカーソルで囲んでPNG画像として保存します。（多少余計な枠線や文字が残っていても問題ありません）
+            </p>
+            <div>
+              <a href="https://iwasawa961.github.io/my-app/index.html" class="btn" target="_blank">絵型抽出ツールを開く ➔</a>
+            </div>
+          </div>
+          <div class="image-col">
+            <a href="p2_img01.png" target="_blank" title="画像を拡大表示">
+              <img src="p2_img01.png" alt="絵型抽出例" style="max-height: 22mm;">
+            </a>
+            <div class="image-caption">図：絵型のみを抽出したPNG画像例<br><span style="font-size: 7.5px; color: var(--accent);">(クリックで拡大表示)</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Page 2 Step 2 -->
+      <div class="step-container">
+        <div class="step-header">
+          <div class="step-header-left">
+            <div class="step-num">02</div>
+            <div class="step-title">ChatGPTで絵型のみをデザイン変更する</div>
+          </div>
+          <a href="https://chatgpt.com/" class="btn btn-chatgpt" target="_blank">ChatGPTを開く ➔</a>
+        </div>
+        <div class="step-02-grid">
+          <div class="text-col">
+            <p style="margin-bottom: 6px; font-size: 11.5px; color: var(--text-muted);">
+              抽出したPNG画像をChatGPTにドロップし、<strong>【画像を作成】をクリックして</strong>以下のテキストを入力します。
+            </p>
+            <div class="prompt-wrapper">
+              <div class="prompt-label">ChatGPT指示テキスト</div>
+              <div class="prompt-box">
+                <div class="prompt-text" id="prompt-p2-step2">こちらの絵型を、
+
+【変更内容を記載】
+
+それ以外のデザインはそのままで絵型作成お願いします。 
+尚、画像は小さいと使いづらいので、アップスケールお願いします。</div>
+                <button class="copy-btn" onclick="copyPrompt('prompt-p2-step2', this)">指示テキストをコピー</button>
+              </div>
+            </div>
+            <div class="tip-box" style="padding: 6px 10px; font-size: 10.5px;">
+              <p><strong>💡 調整のアドバイス：</strong></p>
+              <p>・一発で希望のデザインにならない場合は、指示テキストを微調整して数回繰り返します。</p>
+              <p>・2〜3回指示しても反映されない場合は、簡単な線の削除などであれば、ペイントソフトの消しゴムツール等を使って手動で修正する方が早いためおすすめです。</p>
+            </div>
+          </div>
+          
+          <div class="image-col-wrapper">
+            <div class="step-grid-2col">
+              <div class="image-col">
+                <a href="p2_img02_mod.png" target="_blank" title="画像を拡大表示">
+                  <img src="p2_img02_mod.png" alt="生成絵型" style="max-height: 24mm;">
+                </a>
+                <div class="image-caption">図：生成結果例</div>
+              </div>
+              <div class="image-col">
+                <a href="p2_img02.png" target="_blank" title="画像を拡大表示">
+                  <img src="p2_img02.png" alt="修正絵型" style="max-height: 24mm;">
+                </a>
+                <div class="image-caption">図：消しゴム修正例</div>
+              </div>
+            </div>
+            <div class="image-references" style="margin-top: 2px;">
+              💬 参考：
+              <a href="https://chatgpt.com/share/6a6700a9-f26c-83ee-bd10-f91cea375f6b" target="_blank">チャット例③</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Page 2 Step 3 -->
+      <div class="step-container">
+        <div class="step-header">
+          <div class="step-header-left">
+            <div class="step-num">03</div>
+            <div class="step-title">元PDFファイルをJPG画像に変換・分割する</div>
+          </div>
+        </div>
+        <div class="step-01" style="padding: 6px 12px;">
+          <div class="step-01-text" style="font-size: 11.5px;">
+            1ページ目の手順01と同様に、元PDFをSmallpdfなどの変換サイトで事前にJPG画像に分割保存しておきます。
+          </div>
+          <a href="https://smallpdf.com/jp/pdf-to-jpg" class="btn" target="_blank">SmallpdfでJPG変換 ➔</a>
+        </div>
+      </div>
+
+      <!-- Page 2 Step 4 -->
+      <div class="step-container">
+        <div class="step-header">
+          <div class="step-header-left">
+            <div class="step-num">04</div>
+            <div class="step-title">分割した画像と修正絵型を送り、差し替えと寸法調整を指示する</div>
+          </div>
+          <a href="https://chatgpt.com/" class="btn btn-chatgpt" target="_blank">ChatGPTを開く ➔</a>
+        </div>
+        <p style="margin-bottom: 6px; font-size: 11.5px; color: var(--text-muted);">
+          ChatGPTに分割した仕様書JPG画像と、手順02で完成させた修正絵型PNGを同時に送り、指示を入力します。
+        </p>
+        
+        <div class="step-grid-2col">
+          <div class="prompt-wrapper">
+            <div class="prompt-label">1枚目用指示テキスト</div>
+            <div class="prompt-box" style="padding: 8px 10px; align-items: flex-start;">
+              <div class="prompt-text" id="prompt-p2-step4-1" style="font-size: 10px; line-height: 1.4;">仕様書（PDF分割1枚目のファイル名）の絵型を、修正した絵型（修正絵型のファイル名）と差し替えてください。
+修正した絵型にあわせて寸法なども調整お願いします。</div>
+              <button class="copy-btn" onclick="copyPrompt('prompt-p2-step4-1', this)" style="padding: 4px 8px; font-size: 9.5px;">コピー</button>
+            </div>
+          </div>
+          <div class="prompt-wrapper">
+            <div class="prompt-label">2枚目用指示テキスト</div>
+            <div class="prompt-box" style="padding: 8px 10px; align-items: flex-start;">
+              <div class="prompt-text" id="prompt-p2-step4-2" style="font-size: 10px; line-height: 1.4;">こちらの仕様書（PDF分割2枚目のファイル名）にも同じ絵型を使用したいです。前後の絵型を、先程と同じように差し替えてください。それ以外の内容やデザインはそのままで、仕様書修正を作成お願いします。</div>
+              <button class="copy-btn" onclick="copyPrompt('prompt-p2-step4-2', this)" style="padding: 4px 8px; font-size: 9.5px;">コピー</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Finished block for page 2 -->
+        <div class="finished-container" style="margin-top: 4px;">
+          <span class="finished-title">✨ 完成品がこちら：</span>
+          <a href="p2_finished_1.png" target="_blank" class="finished-link">📄 1枚目（指示書）</a>
+          <span style="color: #cbd5e1;">/</span>
+          <a href="p2_finished_2.png" target="_blank" class="finished-link">📄 2枚目（詳細仕様書）</a>
+        </div>
+        
+        <!-- Reference chats below completed box -->
+        <div class="image-references" style="margin-top: 6px;">
+          💬 参考：
+          <a href="https://chatgpt.com/share/6a67054f-0c30-83ee-9e54-828aaabe1e80" target="_blank">チャット例④</a>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <div>
+        <div class="footer-section-title">応用手順のメリット</div>
+        <p class="footer-text">
+          仕様書から絵型のみを切り出してChatGPTに指示することで、全体レイアウトの不要な崩れを防ぐことができます。AIが絵型の修正のみに専念できるため、細部のデザイン変更が高精度に実現します。
+        </p>
+      </div>
+      <div>
+        <div class="footer-section-title">PDFへの再結合</div>
+        <p class="footer-text" style="margin-bottom: 8px;">
+          修正後の2枚の画像を1つのPDFにまとめたい場合は、JPGからPDFへ変換・結合します。
+        </p>
+        <ul class="footer-links">
+          <li>
+            🔗 <strong>PDF結合サイト:</strong> 
+            <a href="https://smallpdf.com/jp/merge-pdf" target="_blank" style="font-weight: bold;">Smallpdf (PDF結合)</a>
+          </li>
+        </ul>
+      </div>
+    </footer>
+  </div>
+
+
+  <!-- ==================== PAGE 3 (Red Theme) ==================== -->
+  <div class="page page-red">
+    <!-- Header -->
+    <header>
+      <div class="header-top">
+        <h1>既存の仕様書をChatGPTでデザイン変更する方法 03</h1>
+        <div class="logo">CHATGPT GUIDE 03</div>
+      </div>
+      <div class="subtitle">絵型・指示書の内容（寸法や測定部位など）をウェブツールで高度に個別編集する手順解説</div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main>
+      <!-- Page 3 Note Banner -->
+      <div style="font-size: 11.5px; font-weight: bold; color: var(--accent); background-color: var(--bg-tip); border: 1px solid var(--border-tip); padding: 5px 12px; border-radius: 4px;">
+        ※ 手順02（絵型の生成・修正）までは、前ページの方法02と同じ流れになります。
+      </div>
+
+      <!-- Page 3 Step 3 -->
+      <div class="step-container">
+        <div class="step-header">
+          <div class="step-header-left">
+            <div class="step-num">03</div>
+            <div class="step-title">絵型修正ツールで絵型画像を加工・配置して保存する</div>
+          </div>
+          <a href="https://iwasawa961.github.io/wU4-R0IqZ88bQn_comp/" class="btn" target="_blank">絵型修正ツールを開く ➔</a>
+        </div>
+        <div class="step-02-grid">
+          <div class="text-col" style="display: flex; flex-direction: column; justify-content: center;">
+            <p style="font-size: 11.5px; color: var(--text-muted); line-height: 1.55; margin-bottom: 6px;">
+              【絵型修正ツール】を開き、元仕様書PDFをドロップ、1枚目と2枚目の絵型部分だけトリミングした後、不要な線を消しゴム機能で整えます。その後、手順02でChatGPTで修正した絵型画像をドロップして「絵型配置」ボタンを押し、位置を調整して画像を保存します。
+            </p>
+          </div>
+          
+          <div class="image-col-wrapper">
+            <div class="step-grid-2col">
+              <div class="image-col">
+                <a href="p3_img05.png" target="_blank" title="画像を拡大表示">
+                  <img src="p3_img05.png" alt="絵型加工例" style="max-height: 24mm;">
+                </a>
+                <div class="image-caption">図：加工した絵型画像（05.png）</div>
+              </div>
+              <div class="image-col">
+                <a href="p3_img06.png" target="_blank" title="画像を拡大表示">
+                  <img src="p3_img06.png" alt="絵型配置例" style="max-height: 24mm;">
+                </a>
+                <div class="image-caption">図：配置・調整画像（06.png）</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Page 3 Step 4 -->
+      <div class="step-container">
+        <div class="step-header">
+          <div class="step-header-left">
+            <div class="step-num">04</div>
+            <div class="step-title">仕様書入力フォームで仕様書の差し替えと寸法線追加を行う</div>
+          </div>
+          <a href="https://wu4-r0iqz88bqn-knitsheet1-5.onrender.com/" class="btn" target="_blank">仕様書入力フォームを開く ➔</a>
+        </div>
+        
+        <p style="margin-bottom: 6px; font-size: 11.5px; color: var(--text-muted); line-height: 1.5;">
+          【仕様書入力フォーム】の「AI仕様書アシスタント」➔「仕様書自動修正」をクリック。元PDFと手順02の修正絵型画像をドロップし、テキスト欄に修正絵型画像作成時に使用した【変更内容】をコピペして[AIで仕様書を修正する]を実行後、手順03で作成した画像（1・2ページ目）を追加し、寸法線を追加・修正して完成させます。
+        </p>
+        
+        <div class="step-grid-2col" style="margin-bottom: 6px;">
+          <div class="image-col">
+            <a href="p3_finished_1.png" target="_blank" title="画像を拡大表示">
+              <img src="p3_finished_1.png" alt="完成PDF 1ページ目" style="max-height: 26mm;">
+            </a>
+            <div class="image-caption">図：自動修正 1ページ目（寸法線追加）</div>
+          </div>
+          <div class="image-col">
+            <a href="p3_finished_2.png" target="_blank" title="画像を拡大表示">
+              <img src="p3_finished_2.png" alt="完成PDF 2ページ目" style="max-height: 26mm;">
+            </a>
+            <div class="image-caption">図：自動修正 2ページ目</div>
+          </div>
+        </div>
+        
+        <!-- Finished block for page 3 -->
+        <div class="finished-container" style="margin-top: 4px;">
+          <span class="finished-title">✨ 完成品がこちら：</span>
+          <a href="pm889.pdf" target="_blank" class="finished-link">📄 完成仕様書（pm889.pdf）</a>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <div style="grid-column: span 2;">
+        <div class="footer-section-title">高度な個別編集のメリット</div>
+        <p class="footer-text">
+          絵型修正ツールと入力フォームを併用することで、AI任せにせず手動でトリミングや寸法線の配置、数値を細かく制御できます。特に厳密な寸法図面の作成や、複雑な形状変更を行いたい場合に極めて有効な手法です。
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- JavaScript Copy Function -->
+  <script>
+    function copyPrompt(id, btn) {
+      const text = document.getElementById(id).innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '✓ コピー';
+        btn.style.backgroundColor = '#10b981';
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.style.backgroundColor = '';
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy text: ', err);
+      });
+    }
+  </script>
+</body>
+</html>
