@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>仕様書入力フォーム 操作マニュアル</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Reset */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    :root {
+      --primary: #991b1b;
+      --primary-gradient: linear-gradient(135deg, #991b1b 0%, #ef4444 100%);
+      --accent: #dc2626;
+      --text-main: #1f2937;
+      --text-muted: #4b5563;
+      --border: #cbd5e1;
+      --bg-light: #f8fafc;
+      --bg-code: #f1f5f9;
+      --bg-tip: #fef2f2;
+      --border-tip: #fca5a5;
+      --text-tip: #991b1b;
+    }
+    
+    @page {
+      size: A4;
+      margin: 0;
+    }
+    
+    /* Screen View layout (centered A4 pages with shadows) */
+    body {
+      font-family: 'Inter', 'Noto Sans JP', sans-serif;
+      color: var(--text-main);
+      background-color: #f1f5f9;
+      margin: 0;
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    
+    .page {
+      width: 210mm;
+      height: 297mm;
+      padding: 10mm 14mm 10mm 14mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      page-break-after: always;
+      box-sizing: border-box;
+      position: relative;
+      background-color: #ffffff;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      border-radius: 6px;
+    }
+    .page:last-child {
+      page-break-after: avoid;
+    }
+    
+    header {
+      border-bottom: 2px solid #cbd5e1;
+      padding-bottom: 6px;
+    }
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      background: var(--bg-light);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+    h1 {
+      font-size: 19px;
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      line-height: 1.4;
+    }
+    
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      margin-top: 10px;
+      gap: 8px;
+    }
+    
+    .step-container {
+      width: 100%;
+    }
+    
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+    }
+    .section-title::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 12px;
+      background: var(--accent);
+      margin-right: 6px;
+      border-radius: 2px;
+    }
+    
+    .card {
+      background-color: var(--bg-light);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 12px;
+      margin-bottom: 4px;
+      width: 100%;
+    }
+    .card:last-child {
+      margin-bottom: 0;
+    }
+    
+    .card p, .card li {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+    
+    .card ul, .card ol {
+      padding-left: 16px;
+    }
+    
+    /* Layout with columns for Section 05 */
+    .grid-2col {
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 14px;
+    }
+    
+    /* CSS Columns for Section 04 (vertical flow, 2 columns) */
+    .tool-list-container {
+      column-count: 2;
+      column-gap: 18px;
+      margin-top: 2px;
+    }
+    .tool-item {
+      break-inside: avoid;
+      margin-bottom: 4.5px;
+      font-size: 10px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .tool-name {
+      font-weight: 700;
+      color: #0f172a;
+      background: #f1f5f9;
+      padding: 0.5px 5px;
+      border-radius: 3px;
+      margin-right: 4px;
+      font-size: 9.5px;
+      border: 1px solid var(--border);
+      display: inline-block;
+    }
+    
+    /* SVG diagram container */
+    .diagram-container {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background-color: #ffffff;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .diagram-title {
+      font-size: 9px;
+      font-weight: bold;
+      color: var(--text-tip);
+      margin-bottom: 2px;
+      text-align: center;
+    }
+    
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        padding: 0;
+        gap: 0;
+      }
+      .page {
+        padding: 8mm 12mm 8mm 12mm;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page">
+    <!-- Header -->
+    <header>
+      <div class="header-top">
+        <h1>仕様書入力フォーム 操作マニュアル</h1>
+        <div class="logo">FORM GUIDE</div>
+      </div>
+      <div class="subtitle">AI自動入力・仕様書修正手順、寸法テンプレート、ファイル操作、およびデザイン画編集ツールの使い方</div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main>
+      <!-- Section 01 -->
+      <div class="step-container">
+        <div class="section-title">01. AI仕様書アシスタント</div>
+        
+        <div class="card" style="margin-bottom: 4px;">
+          <p style="font-weight: 700; color: #0f172a; margin-bottom: 2px;">📷 新規下書き作成 (写真の読み込み)</p>
+          <p>商品写真をドロップすると、その商品に合わせた仕様をAIが類推して入力してくれます（正しいかどうかは要チェック）。写真は平置きでも人が着用しているものでもOKですが、鮮明な画像が推奨。</p>
+        </div>
+        
+        <div class="card">
+          <p style="font-weight: 700; color: #0f172a; margin-bottom: 2px;">🔄 仕様書自動修正の手順</p>
+          <ol>
+            <li style="margin-bottom: 2px;"><strong>アシスタント起動:</strong> フォーム上部のメニューから「AI仕様書アシスタント」➔「仕様書自動修正」をクリックします。</li>
+            <li style="margin-bottom: 2px;"><strong>ファイルのアップロード:</strong> 元仕様書PDFと、ChatGPTで修正した「修正絵型画像」をドラッグ＆ドロップします。</li>
+            <li style="margin-bottom: 2px;"><strong>変更内容の指示:</strong> 修正指示入力欄（テキストエリア）に、ChatGPTで使用した【変更内容】（例: 「袖を半袖に変更」など）をそのままコピペします。</li>
+            <li><strong>自動修正実行:</strong> [AIで仕様書を修正する]ボタンをクリックすると、AIが内容の差し替え処理を開始します。</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- Section 02 -->
+      <div class="step-container">
+        <div class="section-title">02. テンプレートボタン</div>
+        <div class="card">
+          <p>商品に合わせた寸法を自動入力します。</p>
+        </div>
+      </div>
+
+      <!-- Section 03 -->
+      <div class="step-container">
+        <div class="section-title">03. ファイル操作</div>
+        <div class="card">
+          <ul style="margin-bottom: 2px;">
+            <li style="margin-bottom: 2px;"><strong>PDF出力 / 印刷:</strong> 入力内容をpdfファイルに出力、もしくはプリンタで印刷します。</li>
+            <li style="margin-bottom: 2px;"><strong>入力内容を保存:</strong> 入力内容をjsonファイルで保存します。</li>
+            <li style="margin-bottom: 2px;"><strong>入力内容を読み込む:</strong> 保存したjsonファイルを読み込みます。</li>
+            <li><strong>新規作成 (リセット):</strong> 入力内容をリセットします。</li>
+          </ul>
+          <p style="font-size: 9.2px; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 3px; margin-top: 3px;">
+            ※オートセーブは直前までの入力内容をブラウザが仮保存している状態です。
+          </p>
+        </div>
+      </div>
+
+      <!-- Section 04 -->
+      <div class="step-container">
+        <div class="section-title">04. デザイン画 / 絵型ツール（編集パネル）</div>
+        <div class="card">
+          <!-- 2 Column Vertical Flow List -->
+          <div class="tool-list-container">
+            <div class="tool-item"><span class="tool-name">戻る</span>作業を一つ前に戻します。</div>
+            <div class="tool-item"><span class="tool-name">進む</span>戻した作業を進めます。</div>
+            <div class="tool-item"><span class="tool-name">選択</span>配置した画像、線、図形、テキストなどを選択して移動することができます。画像は選択後、右下のハンドルをドラッグすると拡大縮小ができます。</div>
+            <div class="tool-item"><span class="tool-name">矢印</span>ドラッグすると矢印線が引けます。</div>
+            <div class="tool-item"><span class="tool-name">寸法A</span>ドラッグすると寸法線が引けます。</div>
+            <div class="tool-item"><span class="tool-name">寸法B</span>ドラッグすると足の長い寸法線が引けます。引いた後、選択ボタンで選択し、線端のハンドルをドラッグすると、さらに足を伸ばすことができます。</div>
+            <div class="tool-item"><span class="tool-name">寸法C</span>ドラッグするとV字の寸法線を引けます。</div>
+            <div class="tool-item"><span class="tool-name">長方形</span>長方形のラインを引くことができます。</div>
+            <div class="tool-item"><span class="tool-name">楕円</span>楕円形のラインを引くことができます。</div>
+            <div class="tool-item"><span class="tool-name">テキスト</span>使用するとテキストボックスが開き、テキストを入力できます。テキストはENTERで改行、ALT+ENTERで確定になります（確定すると再入力はできません）。</div>
+            <div class="tool-item"><span class="tool-name">塗りつぶし</span>ボタンを押して長方形・楕円形ツールを使用すると塗りつぶした図形を引けます。</div>
+            <div class="tool-item"><span class="tool-name">最前面へ</span>画像が重なっている時、画像を選択してボタンを押すと、選択した画像が上に重なります。</div>
+            <div class="tool-item"><span class="tool-name">トリミング</span>画像を選択してボタンを押すとトリミングのウインドウが開きます。ハンドルを操作して画像を部分的に切り抜くことができます。</div>
+            <div class="tool-item"><span class="tool-name">縁取り</span>画像を選択してボタンを押すと画像にフチを付けることができます。</div>
+            <div class="tool-item"><span class="tool-name">画像追加</span>画像を追加して読み込みます。</div>
+            <div class="tool-item"><span class="tool-name">39 px</span>テキストのサイズになります。選択ボタンでテキスト選択後にサイズを変更すると、サイズを変更できます。</div>
+            <div class="tool-item"><span class="tool-name">カラー</span>線・図形・テキストのカラーになります。選択ボタンで選択後にカラーを押すと、カラーを変えることができます。</div>
+            <div class="tool-item"><span class="tool-name">オブジェクトの削除</span>選択した状態で「Delete」キーを押します。</div>
+          </div>
+          
+          <div style="font-size: 8.8px; color: var(--text-tip); border-top: 1px solid var(--border); padding-top: 4px; margin-top: 4px; line-height: 1.35;">
+            ※寸法線（寸法A・B・C）は引く順番でA～Zまでマークが自動入力されます。選択ボタンを押してマークをダブルクリックするとマークの内容を変更することができます。<br>
+            ※右上の「全画像削除」を押すと、画像だけでなく寸法線などもすべて削除されます。
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 05 -->
+      <div class="step-container" style="border-top: 1px dashed var(--border); padding-top: 4px;">
+        <div class="section-title">05. 寸法線（矢印線）の追加と編集手順（操作のコツ）</div>
+        <div class="grid-2col">
+          <!-- Section 05 Text -->
+          <div style="display: flex; flex-direction: column; justify-content: center;">
+            <div class="card" style="margin-bottom: 0; padding: 6px 12px;">
+              <p style="font-weight: 700; color: #0f172a; margin-bottom: 2px;">💡 ドラッグして線を描く（重要）</p>
+              <p style="margin-bottom: 3px;">
+                寸法線ツールを起動後、キャンバス上で線を引きたい箇所の<strong>始点でマウスボタンを押し下げ（クリック＆ホールド）、そのまま終点までドラッグして離します。</strong>
+              </p>
+              <p style="font-weight: 600; color: #dc2626;">※ただのクリックでは寸法線は追加されません。必ずドラッグ操作を行ってください。</p>
+            </div>
+          </div>
+
+          <!-- Section 05 SVG Diagram -->
+          <div class="diagram-container">
+            <div class="diagram-title">【図解：寸法線の引き方・ドラッグ操作】</div>
+            <svg width="150" height="70" viewBox="0 0 180 95" xmlns="http://www.w3.org/2000/svg" style="background-color: #faf8f5; border-radius: 4px; border: 1px dashed #cbd5e1;">
+              <!-- Start point marker -->
+              <circle cx="25" cy="35" r="3.5" fill="#dc2626" />
+              <text x="21" y="25" font-size="9" font-weight="bold" fill="#dc2626">始点</text>
+              <text x="8" y="45" font-size="7.5" fill="#475569">(クリック長押し)</text>
+              
+              <!-- Directional drag dashed line -->
+              <line x1="28" y1="35" x2="147" y2="73" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3" />
+              
+              <!-- Mouse cursor icon -->
+              <path d="M 22 35 L 15 40 L 17 30 Z" fill="#475569" stroke="#fff" stroke-width="0.8" />
+              
+              <!-- Arrow/Drag line -->
+              <g transform="translate(85, 54) rotate(18)">
+                <text x="-15" y="-6" font-size="8" font-weight="bold" fill="#0284c7">ドラッグする</text>
+                <path d="M -12 -1 L 12 -1" stroke="#0284c7" stroke-width="1.5" marker-end="url(#arrow)" />
+              </g>
+              
+              <!-- End point marker -->
+              <circle cx="150" cy="75" r="3.5" fill="#16a34a" />
+              <text x="150" y="65" font-size="9" font-weight="bold" fill="#16a34a">終点</text>
+              <text x="142" y="85" font-size="7.5" fill="#475569">(離す)</text>
+              
+              <!-- Dimension line output (arrow) -->
+              <g stroke="#dc2626" stroke-width="1.2">
+                <line x1="25" y1="47" x2="150" y2="87" />
+                <path d="M 25 47 L 31 45 M 25 47 L 29 52" />
+                <path d="M 150 87 L 144 89 M 150 87 L 146 82" />
+              </g>
+              <rect x="80" y="60" width="14" height="9" fill="#fff" stroke="#dc2626" stroke-width="0.8" rx="1.5" />
+              <text x="84" y="67.5" font-size="8.5" font-weight="bold" fill="#dc2626">A</text>
+              
+              <!-- Custom Markers -->
+              <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 0 L 10 5 L 0 10 z" fill="#0284c7" />
+                </marker>
+              </defs>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+</body>
+</html>
